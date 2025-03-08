@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+export DEBUG=1
+
+./bin/celery & python manage.py runserver
