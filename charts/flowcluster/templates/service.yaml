@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "flowcluster.fullname" . }}
+  annotations:
+    {{- toYaml .Values.service.annotations | nindent 4 }}
+  labels:
+    {{- include "flowcluster.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "flowcluster.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/service: nginx
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "flowcluster.fullname" . }}-api
+  labels:
+    {{- include "flowcluster.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: api
+      protocol: TCP
+      name: api
+  selector:
+    {{- include "flowcluster.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/service: web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "flowcluster.fullname" . }}-redis
+  labels:
+    {{- include "flowcluster.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  selector:
+    {{- include "flowcluster.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/service: redis

@@ -1,0 +1,72 @@
+image:
+  repository: ghcr.io/khulnasoft/flowcluster/api
+  frontendRepository: ghcr.io/khulnasoft/flowcluster/frontend
+  tag: main
+
+nginx:
+  image:
+    repository: nginx
+    tag: stable
+
+clickhouse:
+  user: default
+  host: clickhouse
+  database: default
+  secure: "false"
+  verify: "false"
+  ca: ""
+
+imagePullSecrets:
+  - name: dockerconfigjson-ghcr-io
+
+service:
+  annotations: {}
+
+web:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 500Mi
+    limits:
+      memory: 500Mi
+
+frontend:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      memory: 2Gi
+
+worker:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1500Mi
+    limits:
+      memory: 1500Mi
+
+database_url: postgres://flowcluster:flowcluster@{{ include "postgresql.primary.fullname" .Subcharts.postgresql }}:5432/flowcluster
+postgresql:
+  auth:
+    database: flowcluster
+    username: flowcluster
+    password: flowcluster
+
+rabbitmq:
+  auth:
+    username: flowcluster
+    password: flowcluster
+    erlangCookie: flowcluster
+
+redis:
+  image:
+    repository: redis
+    tag: 6.2.7-alpine
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      memory: 1Gi

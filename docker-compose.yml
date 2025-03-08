@@ -1,0 +1,93 @@
+version: "3"
+
+services:
+  app:
+    build: .
+    environment: &django_env
+      DATABASE_URL: postgres://flowcluster:flowcluster@db:5432/flowcluster
+      RABBITMQ_URL: amqp://khulnasoft:khulnasoft@rabbitmq:5672
+      REDIS_URL: redis://redis:6379
+      CLICKHOUSE_HOST: $CLICKHOUSE_HOST
+      CLICKHOUSE_DATABASE: $CLICKHOUSE_DATABASE
+      CLICKHOUSE_USER: $CLICKHOUSE_USER
+      CLICKHOUSE_PASSWORD: $CLICKHOUSE_PASSWORD
+      CLICKHOUSE_CLUSTER: $CLICKHOUSE_CLUSTER
+      CLICKHOUSE_SECURE: $CLICKHOUSE_SECURE
+      CLICKHOUSE_VERIFY: $CLICKHOUSE_VERIFY
+      CLICKHOUSE_CA: $CLICKHOUSE_CA
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+
+    command:
+      - bash
+      - -c
+      - |
+        python manage.py migrate
+        python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+      - clickhouse
+
+  web:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+
+  worker:
+    build: .
+    environment:
+      <<: *django_env
+    command:
+      - ./bin/celery
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+      - clickhouse
+
+  redis:
+    image: redis:6.2.7-alpine
+    restart: on-failure
+    ports:
+      - "6388:6379"
+    command: redis-server --maxmemory-policy allkeys-lru --maxmemory 200mb
+
+  db:
+    image: postgres:14-alpine
+    restart: on-failure
+    environment:
+      KHULNASOFT_USER: flowcluster
+      KHULNASOFT_DB: flowcluster
+      KHULNASOFT_PASSWORD: flowcluster
+
+  caddy:
+    image: caddy:2.6.1
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_ADDRESS: $SITE_ADDRESS
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - web
+      - app
+
+  rabbitmq:
+    image: rabbitmq:3.12.2-management-alpine
+    ports:
+      - "15672:15672" # Web management UI
+      - "5672:5672" # Default RabbitMQ broker port
+    environment:
+      RABBITMQ_DEFAULT_USER: khulnasoft
+      RABBITMQ_DEFAULT_PASS: khulnasoft

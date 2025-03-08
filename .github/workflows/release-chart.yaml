@@ -1,0 +1,59 @@
+name: Release Chart
+
+on:
+  pull_request:
+    paths:
+      - charts/**
+      - .github/workflows/release-chart.yaml
+  push:
+    branches:
+      - main
+    paths:
+      - charts/**
+      - .github/workflows/release-chart.yaml
+
+jobs:
+  release:
+    name: Release chart to repo
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: v3.12.2
+
+      - name: Add -<sha> to version in charts/flowcluster/Chart.yaml and update Chart.lock
+        if: github.ref != 'refs/heads/main'
+        run: |
+          sed -i 's/^version: \(.*\)$/version: \1-${{ github.sha }}/g' charts/flowcluster/Chart.yaml
+
+      - name: Configure Git
+        run: |
+          git config user.name "Max Hedgehog"
+          git config user.email "127861667+max-hedgehog[bot]@users.noreply.github.com"
+          git fetch origin gh-pages --depth=1
+
+      - name: Package
+        run: |
+          helm dependency update charts/flowcluster/
+          mkdir -p .cr-release-packages
+          cd .cr-release-packages
+          helm package ../charts/flowcluster
+          cd -
+          set -x
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@4b85f2c82c80ff4284ff8520f47bbe69dd89b0aa
+        if: github.ref == 'refs/heads/main' && github.repository == 'KhulnaSoft/FlowCluster'
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          skip_existing: true
+          skip_packaging: true
