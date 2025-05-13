@@ -119,7 +119,9 @@ def create_table_backup(
     )
 
 
-def create_database_backup(database, bucket, path, aws_key=None, aws_secret=None, base_backup=None, cluster="default", is_sharded=False):
+def create_database_backup(
+    database, bucket, path, aws_key=None, aws_secret=None, base_backup=None, cluster="default", is_sharded=False
+):
     if aws_key is None or aws_secret is None:
         aws_key = settings.AWS_ACCESS_KEY_ID
         aws_secret = settings.AWS_SECRET_ACCESS_KEY

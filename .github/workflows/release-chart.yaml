@@ -36,8 +36,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config user.name "Max Hedgehog"
-          git config user.email "127861667+max-hedgehog[bot]@users.noreply.github.com"
+          git config user.name "Md Sulaiman"
+          git config user.email "118260833+gitworkflows@users.noreply.github.com"
           git fetch origin gh-pages --depth=1
 
       - name: Package
