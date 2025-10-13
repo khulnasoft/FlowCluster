@@ -174,7 +174,7 @@ redis==4.5.4
     # via
     #   -r requirements.in
     #   django-redis
-requests==2.32.2
+requests==2.32.4
     # via
     #   -r requirements.in
     #   openai
@@ -209,7 +209,7 @@ uritemplate==4.1.1
     # via
     #   -r requirements.in
     #   drf-spectacular
-urllib3==1.26.19
+urllib3==2.5.0
     # via
     #   -r requirements.in
     #   requests
