@@ -79,7 +79,7 @@ cryptography==44.0.1
     # via -r requirements.in
 dj-database-url==1.0.0
     # via -r requirements.in
-django==4.2.20
+django==4.2.25
     # via
     #   -r requirements.in
     #   dj-database-url
